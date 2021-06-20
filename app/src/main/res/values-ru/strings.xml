@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Заметки</string>
+    <string name="default_name">Заметка</string>
+    <string name="name">Название</string>
+    <string name="warn">Вы действительно хотите удалить этот элемент?</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+    <string name="bold"><b>Полужирный</b></string>
+    <string name="italic"><i>Курсив</i></string>
+    <string name="underline"><u>Подчеркнутый</u></string>
+    <string name="strikethrough"><strike>Зачеркнутый</strike></string>
+    <string name="normal">Обычный</string>
+</resources>
