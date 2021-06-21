@@ -18,10 +18,11 @@ import android.text.style.CharacterStyle;
 import android.text.style.StrikethroughSpan;
 import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
-import android.view.View;
-import android.widget.Button;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.EditText;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -47,64 +48,6 @@ public class NoteEditorActivity extends AppCompatActivity {
 
         noteName = findViewById(R.id.note_name);
         noteText = findViewById(R.id.note_text);
-
-        Button bold = findViewById(R.id.bold);
-        Button italic = findViewById(R.id.italic);
-        Button underline = findViewById(R.id.underline);
-        Button strikethrough = findViewById(R.id.strikethrough);
-        Button normal = findViewById(R.id.normal);
-
-        bold.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                applySpan(new StyleSpan(Typeface.BOLD));
-            }
-        });
-
-        italic.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                applySpan(new StyleSpan(Typeface.ITALIC));
-            }
-        });
-
-        underline.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                applySpan(new UnderlineSpan());
-            }
-        });
-
-        strikethrough.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                applySpan(new StrikethroughSpan());
-            }
-        });
-
-        normal.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                EditText editText;
-                if (noteText.isFocused())
-                    editText = noteText;
-                else if (noteName.isFocused())
-                    editText = noteName;
-                else
-                    return;
-
-                int start = editText.getSelectionStart();
-                int end = editText.getSelectionEnd();
-
-                Spannable text = new SpannableString(editText.getText());
-                CharacterStyle[] spans = text.getSpans(start, end, CharacterStyle.class);
-                for (CharacterStyle span : spans)
-                    text.removeSpan(span);
-
-                editText.setText(text);
-                editText.setSelection(start, end);
-            }
-        });
 
         TextWatcher watcher = new TextWatcher() {
             @Override
@@ -171,6 +114,35 @@ public class NoteEditorActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.text_format, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.bold:
+                applySpan(new StyleSpan(Typeface.BOLD));
+                break;
+            case R.id.italic:
+                applySpan(new StyleSpan(Typeface.ITALIC));
+                break;
+            case R.id.underline:
+                applySpan(new UnderlineSpan());
+                break;
+            case R.id.strikethrough:
+                applySpan(new StrikethroughSpan());
+                break;
+            case R.id.normal:
+                removeSpans();
+                return true;
+        }
+
+        return true;
+    }
+
+    @Override
     public void onBackPressed() {
         saveChanges();
         super.onBackPressed();
@@ -223,5 +195,27 @@ public class NoteEditorActivity extends AppCompatActivity {
             editText.setText(text);
             editText.setSelection(start, end);
         }
+    }
+
+    public void removeSpans() {
+        EditText editText;
+        if (noteText.isFocused())
+            editText = noteText;
+        else if (noteName.isFocused())
+            editText = noteName;
+        else
+            return;
+
+        int start = editText.getSelectionStart();
+        int end = editText.getSelectionEnd();
+
+        Spannable text = new SpannableString(editText.getText());
+
+        CharacterStyle[] spans = text.getSpans(start, end, CharacterStyle.class);
+        for (CharacterStyle span : spans)
+            text.removeSpan(span);
+
+        editText.setText(text);
+        editText.setSelection(start, end);
     }
 }
