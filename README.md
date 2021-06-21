@@ -1,2 +1,2 @@
-# Android-Notes
+# Android Notes
 Simple notes for android
