@@ -1,8 +1,6 @@
 package com.dm.notes.ui;
 
-import android.app.AlertDialog;
 import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -89,27 +87,6 @@ public class NoteEditorActivity extends AppCompatActivity {
 
             noteName.setText(name);
             noteText.setText(text);
-        }
-
-        if (intent.getBooleanExtra("del", false)) {
-            new AlertDialog.Builder(this)
-                    .setMessage(R.string.warn)
-                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            db.delete(DatabaseHelper.TABLE, "_id = ?",
-                                    new String[]{String.valueOf(intent.getLongExtra("id", 0))});
-
-                            finish();
-                        }
-                    })
-                    .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                        }
-                    })
-                    .create()
-                    .show();
         }
     }
 

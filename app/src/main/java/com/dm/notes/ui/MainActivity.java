@@ -1,6 +1,8 @@
 package com.dm.notes.ui;
 
+import android.app.AlertDialog;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -20,11 +22,11 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NotesAdapter.NoteEventListener {
 
-    private List<Note> notes = new ArrayList<>();
+    private final List<Note> notes = new ArrayList<>();
+
     private NotesAdapter adapter;
-
     private SQLiteDatabase db;
 
     @Override
@@ -55,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
         DatabaseHelper databaseHelper = new DatabaseHelper(this);
         db = databaseHelper.getWritableDatabase();
 
-        adapter = new NotesAdapter(notes);
+        adapter = new NotesAdapter(this, notes);
 
         notesList.addItemDecoration(new GridSpacingItemDecoration(2,
                 Math.round(3 * getResources().getDisplayMetrics().density)));
@@ -80,5 +82,34 @@ public class MainActivity extends AppCompatActivity {
         }
 
         adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onNoteClicked(Note note) {
+        Intent intent = new Intent(this, NoteEditorActivity.class);
+        intent.putExtra("id", note.id);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onNoteLongClicked(Note note) {
+        new AlertDialog.Builder(this)
+                .setMessage(R.string.warn)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        db.delete(DatabaseHelper.TABLE, "_id = ?",
+                                new String[]{String.valueOf(note.id)});
+
+                        onResume();
+                    }
+                })
+                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                    }
+                })
+                .create()
+                .show();
     }
 }
