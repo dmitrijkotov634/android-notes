@@ -1,77 +1,71 @@
 package com.dm.notes.ui;
 
-import android.content.Context;
-import android.text.Html;
-import android.text.SpannableString;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.dm.notes.R;
+import com.dm.notes.databinding.NoteLayoutBinding;
+import com.dm.notes.helpers.Utils;
 import com.dm.notes.models.Note;
 
 import java.util.List;
 
 public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> {
     public List<Note> data;
-    public NoteEventListener callback;
+    public NotesCallback callback;
 
-    public NotesAdapter(Context context, List<Note> data) {
-        this.callback = (NoteEventListener) context;
+    public NotesAdapter(NotesCallback callback, List<Note> data) {
+        this.callback = callback;
         this.data = data;
     }
 
     @NonNull
     @Override
     public NotesAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View rowItem = LayoutInflater.from(parent.getContext()).inflate(R.layout.note_layout, parent, false);
+        NoteLayoutBinding rowItem = NoteLayoutBinding.inflate(LayoutInflater.from(parent.getContext()));
         return new ViewHolder(rowItem);
     }
 
     @Override
     public void onBindViewHolder(@NonNull NotesAdapter.ViewHolder holder, int position) {
-        SpannableString text = SpannableString.valueOf(Html.fromHtml(this.data.get(position).text));
-        if (text.toString().endsWith("\n\n"))
-            text = (SpannableString) text.subSequence(0, text.length() - 2);
-
-        holder.text.setText(text);
+        holder.binding.note.setText(Utils.fromHtml(data.get(position).getText()));
     }
 
     @Override
     public int getItemCount() {
-        return this.data.size();
+        return data.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
-        private final TextView text;
+        public final NoteLayoutBinding binding;
 
-        public ViewHolder(View view) {
-            super(view);
-            view.setOnClickListener(this);
-            view.setOnLongClickListener(this);
+        public ViewHolder(NoteLayoutBinding binding) {
+            super(binding.getRoot());
 
-            this.text = view.findViewById(R.id.note);
+            this.binding = binding;
+
+            binding.getRoot().setOnClickListener(this);
+            binding.getRoot().setOnLongClickListener(this);
         }
 
         @Override
         public void onClick(View view) {
-            callback.onNoteClicked(data.get(getLayoutPosition()));
+            callback.onNoteClicked(data.get(getLayoutPosition()), getLayoutPosition());
         }
 
         @Override
         public boolean onLongClick(View view) {
-            callback.onNoteLongClicked(data.get(getLayoutPosition()));
+            callback.onNoteLongClicked(data.get(getLayoutPosition()), getLayoutPosition());
             return true;
         }
     }
 
-    public interface NoteEventListener {
-        void onNoteClicked(Note note);
+    public interface NotesCallback {
+        void onNoteClicked(Note note, int position);
 
-        void onNoteLongClicked(Note note);
+        void onNoteLongClicked(Note note, int position);
     }
 }

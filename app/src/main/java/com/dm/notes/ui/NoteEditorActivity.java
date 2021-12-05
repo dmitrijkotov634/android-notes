@@ -22,16 +22,16 @@ import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
 import com.dm.notes.R;
+import com.dm.notes.databinding.ActivityNoteBinding;
 import com.dm.notes.helpers.DatabaseHelper;
+import com.dm.notes.helpers.Utils;
 
 public class NoteEditorActivity extends AppCompatActivity {
-    private SQLiteDatabase db;
+    private ActivityNoteBinding binding;
 
-    private EditText noteName;
-    private EditText noteText;
+    private SQLiteDatabase db;
 
     private Intent intent;
     private boolean hasChanges;
@@ -40,12 +40,11 @@ public class NoteEditorActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note);
-        Toolbar toolbar = findViewById(R.id.toolbar);
 
-        setSupportActionBar(toolbar);
+        binding = ActivityNoteBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        noteName = findViewById(R.id.note_name);
-        noteText = findViewById(R.id.note_text);
+        setSupportActionBar(binding.toolbar);
 
         TextWatcher watcher = new TextWatcher() {
             @Override
@@ -62,11 +61,10 @@ public class NoteEditorActivity extends AppCompatActivity {
             }
         };
 
-        noteText.addTextChangedListener(watcher);
-        noteName.addTextChangedListener(watcher);
+        binding.noteName.addTextChangedListener(watcher);
+        binding.noteName.addTextChangedListener(watcher);
 
-        DatabaseHelper databaseHelper = new DatabaseHelper(this);
-        db = databaseHelper.getWritableDatabase();
+        db = new DatabaseHelper(this).getWritableDatabase();
 
         intent = getIntent();
 
@@ -77,16 +75,9 @@ public class NoteEditorActivity extends AppCompatActivity {
                 null, null, null)) {
 
             cursor.moveToFirst();
-            SpannableString name = SpannableString.valueOf(Html.fromHtml(cursor.getString(0)));
-            SpannableString text = SpannableString.valueOf(Html.fromHtml(cursor.getString(1)));
 
-            if (name.toString().endsWith("\n\n"))
-                name = (SpannableString) name.subSequence(0, name.length() - 2);
-            if (text.toString().endsWith("\n\n"))
-                text = (SpannableString) text.subSequence(0, text.length() - 2);
-
-            noteName.setText(name);
-            noteText.setText(text);
+            binding.noteName.setText(Utils.fromHtml(cursor.getString(0)));
+            binding.noteText.setText(Utils.fromHtml(cursor.getString(1)));
         }
     }
 
@@ -98,24 +89,17 @@ public class NoteEditorActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.bold:
-                applySpan(new StyleSpan(Typeface.BOLD));
-                break;
-            case R.id.italic:
-                applySpan(new StyleSpan(Typeface.ITALIC));
-                break;
-            case R.id.underline:
-                applySpan(new UnderlineSpan());
-                break;
-            case R.id.strikethrough:
-                applySpan(new StrikethroughSpan());
-                break;
-            case R.id.normal:
-                removeSpans();
-                return true;
-        }
-
+        int id = item.getItemId();
+        if (id == R.id.bold)
+            applySpan(new StyleSpan(Typeface.BOLD));
+        else if (id == R.id.italic)
+            applySpan(new StyleSpan(Typeface.ITALIC));
+        else if (id == R.id.underline)
+            applySpan(new UnderlineSpan());
+        else if (id == R.id.strikethrough)
+            applySpan(new StrikethroughSpan());
+        else if (id == R.id.normal)
+            applySpan(null);
         return true;
     }
 
@@ -135,16 +119,15 @@ public class NoteEditorActivity extends AppCompatActivity {
         if (hasChanges) {
             ContentValues values = new ContentValues();
 
-            String[] lines;
-            if (noteName.getText().toString().equals("") &&
-                    (lines = noteText.getText().toString().split("\n", 2)).length > 0) {
-
-                values.put(DatabaseHelper.COLUMN_NAME,
-                        lines[0].length() > 50 ? lines[0].substring(0, 50) : lines[0]);
+            String name;
+            if (binding.noteName.getText().toString().isEmpty()) {
+                String[] lines = binding.noteText.getText().toString().split("\n", 2);
+                name = lines[0].length() > 50 ? lines[0].substring(0, 50) : lines[0];
             } else
-                values.put(DatabaseHelper.COLUMN_NAME, Html.toHtml(noteName.getText()));
+                name = Html.toHtml(binding.noteName.getText());
 
-            values.put(DatabaseHelper.COLUMN_TEXT, Html.toHtml(noteText.getText()));
+            values.put(DatabaseHelper.COLUMN_NAME, name);
+            values.put(DatabaseHelper.COLUMN_TEXT, Html.toHtml(binding.noteText.getText()));
 
             db.update(DatabaseHelper.TABLE, values, "_id = ?",
                     new String[]{String.valueOf(intent.getLongExtra("id", 0))});
@@ -155,31 +138,10 @@ public class NoteEditorActivity extends AppCompatActivity {
 
     public void applySpan(CharacterStyle span) {
         EditText editText;
-        if (noteText.isFocused())
-            editText = noteText;
-        else if (noteName.isFocused())
-            editText = noteName;
-        else
-            return;
-
-        int start = editText.getSelectionStart();
-        int end = editText.getSelectionEnd();
-
-        if (start != end) {
-            Spannable text = new SpannableString(editText.getText());
-            text.setSpan(span, start, end,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            editText.setText(text);
-            editText.setSelection(start, end);
-        }
-    }
-
-    public void removeSpans() {
-        EditText editText;
-        if (noteText.isFocused())
-            editText = noteText;
-        else if (noteName.isFocused())
-            editText = noteName;
+        if (binding.noteText.isFocused())
+            editText = binding.noteText;
+        else if (binding.noteName.isFocused())
+            editText = binding.noteName;
         else
             return;
 
@@ -188,11 +150,17 @@ public class NoteEditorActivity extends AppCompatActivity {
 
         Spannable text = new SpannableString(editText.getText());
 
-        CharacterStyle[] spans = text.getSpans(start, end, CharacterStyle.class);
-        for (CharacterStyle span : spans)
-            text.removeSpan(span);
+        if (start != end) {
+            if (span == null) {
+                CharacterStyle[] spans = text.getSpans(start, end, CharacterStyle.class);
+                for (CharacterStyle selectSpan : spans)
+                    text.removeSpan(selectSpan);
+            } else {
+                text.setSpan(span, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
 
-        editText.setText(text);
-        editText.setSelection(start, end);
+            editText.setText(text);
+            editText.setSelection(start, end);
+        }
     }
 }

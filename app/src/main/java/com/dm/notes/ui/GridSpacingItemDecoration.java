@@ -3,13 +3,13 @@ package com.dm.notes.ui;
 import android.graphics.Rect;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
 
-    private int spanCount;
-    private int spacing;
-    private boolean includeEdge;
+    private final int spanCount;
+    private final int spacing;
 
     public GridSpacingItemDecoration(int spanCount, int spacing) {
         this.spanCount = spanCount;
@@ -17,7 +17,7 @@ public class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
     }
 
     @Override
-    public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+    public void getItemOffsets(Rect outRect, @NonNull View view, RecyclerView parent, @NonNull RecyclerView.State state) {
         int position = parent.getChildAdapterPosition(view);
         int column = position % spanCount;
 
@@ -27,7 +27,7 @@ public class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
         if (position < spanCount) {
             outRect.top = spacing;
         }
-        outRect.bottom = spacing;
 
+        outRect.bottom = spacing;
     }
 }
