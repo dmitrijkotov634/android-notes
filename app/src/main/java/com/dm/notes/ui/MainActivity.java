@@ -1,6 +1,5 @@
 package com.dm.notes.ui;
 
-import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
@@ -14,6 +13,7 @@ import com.dm.notes.R;
 import com.dm.notes.databinding.ActivityMainBinding;
 import com.dm.notes.helpers.DatabaseHelper;
 import com.dm.notes.models.Note;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
 
     @Override
     public void onNoteLongClicked(Note note, int position) {
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setMessage(R.string.warn)
                 .setPositiveButton(R.string.yes, (dialogInterface, i) -> {
                     db.delete(DatabaseHelper.TABLE, "_id = ?",
@@ -110,7 +110,6 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
                 })
                 .setNegativeButton(R.string.no, (dialogInterface, i) -> {
                 })
-                .create()
                 .show();
     }
 }

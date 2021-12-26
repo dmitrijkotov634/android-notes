@@ -25,6 +25,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
+        android:padding="8dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <com.google.android.material.textfield.TextInputLayout
@@ -48,9 +49,7 @@
             android:background="@android:color/transparent"
             android:gravity="start|top"
             android:inputType="textMultiLine"
-            android:paddingLeft="15dp"
-            android:paddingTop="15dp"
-            android:paddingRight="15dp" />
+            android:padding="8dp" />
 
     </LinearLayout>
 
