@@ -62,7 +62,7 @@ public class NoteEditorActivity extends AppCompatActivity {
         };
 
         binding.noteName.addTextChangedListener(watcher);
-        binding.noteName.addTextChangedListener(watcher);
+        binding.noteText.addTextChangedListener(watcher);
 
         db = new DatabaseHelper(this).getWritableDatabase();
 
@@ -115,7 +115,7 @@ public class NoteEditorActivity extends AppCompatActivity {
         super.onStop();
     }
 
-    public void saveChanges() {
+    private void saveChanges() {
         if (hasChanges) {
             ContentValues values = new ContentValues();
 
@@ -136,19 +136,19 @@ public class NoteEditorActivity extends AppCompatActivity {
         }
     }
 
-    public void applySpan(CharacterStyle span) {
-        EditText editText;
+    private void applySpan(CharacterStyle span) {
+        EditText input;
         if (binding.noteText.isFocused())
-            editText = binding.noteText;
+            input = binding.noteText;
         else if (binding.noteName.isFocused())
-            editText = binding.noteName;
+            input = binding.noteName;
         else
             return;
 
-        int start = editText.getSelectionStart();
-        int end = editText.getSelectionEnd();
+        int start = input.getSelectionStart();
+        int end = input.getSelectionEnd();
 
-        Spannable text = new SpannableString(editText.getText());
+        Spannable text = new SpannableString(input.getText());
 
         if (start != end) {
             if (span == null) {
@@ -159,8 +159,8 @@ public class NoteEditorActivity extends AppCompatActivity {
                 text.setSpan(span, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
 
-            editText.setText(text);
-            editText.setSelection(start, end);
+            input.setText(text);
+            input.setSelection(start, end);
         }
     }
 }
