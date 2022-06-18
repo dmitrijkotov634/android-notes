@@ -2,7 +2,7 @@ package com.dm.notes.models;
 
 public class Note {
     private final long id;
-    private String text;
+    private final String text;
 
     public Note(long id, String text) {
         this.id = id;
@@ -15,9 +15,5 @@ public class Note {
 
     public String getText() {
         return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
     }
 }

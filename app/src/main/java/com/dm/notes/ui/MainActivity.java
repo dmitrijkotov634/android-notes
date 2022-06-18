@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.dm.notes.R;
 import com.dm.notes.databinding.ActivityMainBinding;
@@ -22,17 +21,18 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
 
     private final List<Note> notes = new ArrayList<>();
 
+    private ActivityMainBinding binding;
+
     private NotesAdapter adapter;
     private SQLiteDatabase db;
 
-    private int currentNotePosition;
-    private long currentNoteId;
+    private Note currentNote;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.toolbar);
@@ -41,15 +41,13 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
             ContentValues values = new ContentValues();
             values.put(DatabaseHelper.COLUMN_NAME, "");
             values.put(DatabaseHelper.COLUMN_TEXT, "");
-            currentNoteId = db.insert(DatabaseHelper.TABLE, null, values);
+            long noteId = db.insert(DatabaseHelper.TABLE, null, values);
 
             Intent intent = new Intent(getApplicationContext(), NoteEditorActivity.class);
-            intent.putExtra("id", currentNoteId);
+            intent.putExtra("id", noteId);
             startActivity(intent);
 
-            currentNotePosition = adapter.getItemCount();
-
-            notes.add(new Note(currentNoteId, ""));
+            notes.add(currentNote = new Note(noteId, ""));
         });
 
         db = new DatabaseHelper(this).getWritableDatabase();
@@ -67,24 +65,34 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
 
         binding.notesList.addItemDecoration(new GridSpacingItemDecoration(2,
                 Math.round(3 * getResources().getDisplayMetrics().density)));
-        binding.notesList.setLayoutManager(new GridLayoutManager(this, 2));
         binding.notesList.setAdapter(adapter);
+
+        binding.notesList.scrollToPosition(notes.size() - 1);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
+        if (currentNote == null)
+            return;
+
         try (Cursor cursor = db.query(DatabaseHelper.TABLE,
                 new String[]{DatabaseHelper.COLUMN_NAME},
-                "_id = ?", new String[]{String.valueOf(currentNoteId)}, null, null, null)) {
+                "_id = ?", new String[]{String.valueOf(currentNote.getId())}, null, null, null)) {
 
             while (cursor.moveToNext()) {
-                notes.get(currentNotePosition).setText(cursor.getString(0));
+                int position = notes.indexOf(currentNote);
+
+                notes.remove(position);
+                notes.add(position, new Note(currentNote.getId(), cursor.getString(0)));
+
+                adapter.notifyItemChanged(position);
+                binding.notesList.scrollToPosition(position);
+
+                currentNote = null;
             }
         }
-
-        adapter.notifyItemChanged(currentNotePosition);
     }
 
     @Override
@@ -93,14 +101,13 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
         intent.putExtra("id", note.getId());
         startActivity(intent);
 
-        currentNoteId = note.getId();
-        currentNotePosition = position;
+        currentNote = note;
     }
 
     @Override
     public void onNoteLongClicked(Note note, int position) {
         new MaterialAlertDialogBuilder(this)
-                .setMessage(R.string.warn)
+                .setMessage(R.string.warning)
                 .setPositiveButton(R.string.yes, (dialogInterface, i) -> {
                     db.delete(DatabaseHelper.TABLE, "_id = ?",
                             new String[]{String.valueOf(note.getId())});

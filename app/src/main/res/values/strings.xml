@@ -1,10 +1,12 @@
 <resources>
     <string name="app_name">Notes</string>
-    <string name="default_name">Note</string>
+
     <string name="name">Name</string>
-    <string name="warn">Are you sure you want to remove the item?</string>
+    <string name="warning">Are you sure you want to remove the item?</string>
+
     <string name="yes">Yes</string>
     <string name="no">No</string>
+
     <string name="bold"><b>Bold</b></string>
     <string name="italic"><i>Italic</i></string>
     <string name="underline"><u>Underline</u></string>
