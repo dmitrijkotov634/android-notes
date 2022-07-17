@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
 
             Intent intent = new Intent(getApplicationContext(), NoteEditorActivity.class);
             intent.putExtra("id", noteId);
+            intent.putExtra("empty", true);
             startActivity(intent);
 
             notes.add(currentNote = new Note(noteId, ""));
@@ -98,7 +99,10 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
     @Override
     public void onNoteClicked(Note note, int position) {
         Intent intent = new Intent(this, NoteEditorActivity.class);
+
         intent.putExtra("id", note.getId());
+        intent.putExtra("empty", note.getText().isEmpty());
+
         startActivity(intent);
 
         currentNote = note;

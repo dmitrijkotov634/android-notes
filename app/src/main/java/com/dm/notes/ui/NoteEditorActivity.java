@@ -18,6 +18,7 @@ import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
@@ -34,7 +35,9 @@ public class NoteEditorActivity extends AppCompatActivity {
     private SQLiteDatabase db;
 
     private Intent intent;
+
     private boolean hasChanges;
+    private boolean editing;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,12 +64,16 @@ public class NoteEditorActivity extends AppCompatActivity {
             }
         };
 
+        binding.fab2.setOnClickListener(view -> changeMode(!editing));
+
         binding.noteName.addTextChangedListener(watcher);
         binding.noteText.addTextChangedListener(watcher);
 
         db = new DatabaseHelper(this).getWritableDatabase();
 
         intent = getIntent();
+
+        changeMode(intent.getBooleanExtra("empty", true));
 
         try (Cursor cursor = db.query(DatabaseHelper.TABLE,
                 new String[]{DatabaseHelper.COLUMN_NAME, DatabaseHelper.COLUMN_TEXT},
@@ -83,24 +90,52 @@ public class NoteEditorActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.text_format, menu);
+        if (editing)
+            getMenuInflater().inflate(R.menu.text_format, menu);
+
         return true;
+    }
+
+    private void changeMode(boolean editing) {
+        binding.noteName.setFocusable(editing);
+        binding.noteName.setCursorVisible(editing);
+        binding.noteName.setFocusableInTouchMode(editing);
+
+        binding.noteText.setFocusable(editing);
+        binding.noteText.setCursorVisible(editing);
+        binding.noteText.setFocusableInTouchMode(editing);
+
+        binding.fab2.setImageResource(editing ? R.drawable.ic_baseline_check_24 : R.drawable.ic_edit);
+
+        invalidateOptionsMenu();
+
+        if (!editing) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(binding.getRoot().getWindowToken(), 0);
+        }
+
+        saveChanges();
+
+        this.editing = editing;
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.bold)
-            applySpan(new StyleSpan(Typeface.BOLD));
-        else if (id == R.id.italic)
-            applySpan(new StyleSpan(Typeface.ITALIC));
-        else if (id == R.id.underline)
-            applySpan(new UnderlineSpan());
-        else if (id == R.id.strikethrough)
-            applySpan(new StrikethroughSpan());
-        else if (id == R.id.normal)
-            applySpan(null);
+        applySpan(getSpan(item.getItemId()));
         return true;
+    }
+
+    private CharacterStyle getSpan(int id) {
+        if (id == R.id.bold)
+            return new StyleSpan(Typeface.BOLD);
+        else if (id == R.id.italic)
+            return new StyleSpan(Typeface.ITALIC);
+        else if (id == R.id.underline)
+            return new UnderlineSpan();
+        else if (id == R.id.strikethrough)
+            return new StrikethroughSpan();
+
+        return null;
     }
 
     @Override
@@ -137,12 +172,9 @@ public class NoteEditorActivity extends AppCompatActivity {
     }
 
     private void applySpan(CharacterStyle span) {
-        EditText input;
-        if (binding.noteText.isFocused())
-            input = binding.noteText;
-        else if (binding.noteName.isFocused())
-            input = binding.noteName;
-        else
+        EditText input = binding.noteText.isFocused() ? binding.noteText : (binding.noteName.isFocused() ? binding.noteName : null);
+
+        if (input == null)
             return;
 
         int start = input.getSelectionStart();
