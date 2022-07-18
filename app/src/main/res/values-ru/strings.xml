@@ -13,4 +13,6 @@
     <string name="underline"><u>Подчеркнутый</u></string>
     <string name="strikethrough"><strike>Зачеркнутый</strike></string>
     <string name="normal">Обычный</string>
+
+    <string name="search">Поиск</string>
 </resources>

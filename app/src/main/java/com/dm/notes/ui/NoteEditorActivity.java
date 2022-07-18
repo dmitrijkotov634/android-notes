@@ -12,10 +12,12 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextWatcher;
+import android.text.method.LinkMovementMethod;
 import android.text.style.CharacterStyle;
 import android.text.style.StrikethroughSpan;
 import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
+import android.text.util.Linkify;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
@@ -91,12 +93,17 @@ public class NoteEditorActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         if (editing)
-            getMenuInflater().inflate(R.menu.text_format, menu);
+            getMenuInflater().inflate(R.menu.editor_menu, menu);
 
         return true;
     }
 
     private void changeMode(boolean editing) {
+        binding.noteText.setLinksClickable(!editing);
+        binding.noteText.setMovementMethod(editing ? null : LinkMovementMethod.getInstance());
+
+        Linkify.addLinks(binding.noteText, Linkify.WEB_URLS | Linkify.EMAIL_ADDRESSES);
+
         binding.noteName.setFocusable(editing);
         binding.noteName.setCursorVisible(editing);
         binding.noteName.setFocusableInTouchMode(editing);

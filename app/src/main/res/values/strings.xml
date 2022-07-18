@@ -12,4 +12,6 @@
     <string name="underline"><u>Underline</u></string>
     <string name="strikethrough"><strike>Strikethrough</strike></string>
     <string name="normal">Normal</string>
+
+    <string name="search">Search</string>
 </resources>

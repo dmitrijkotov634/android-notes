@@ -5,6 +5,9 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.View;
+import android.widget.SearchView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -69,6 +72,51 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
         binding.notesList.setAdapter(adapter);
 
         binding.notesList.scrollToPosition(notes.size() - 1);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+
+        SearchView searchView = (SearchView) menu.findItem(R.id.app_bar_search).getActionView();
+
+        searchView.setOnSearchClickListener(v -> binding.fab.setVisibility(View.GONE));
+        searchView.setOnCloseListener(() -> {
+            binding.fab.setVisibility(View.VISIBLE);
+
+            adapter = new NotesAdapter(MainActivity.this, notes);
+            binding.notesList.setAdapter(adapter);
+
+            return false;
+        });
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String search) {
+                doSearch(search);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String search) {
+                doSearch(search);
+                return true;
+            }
+
+            private void doSearch(String search) {
+                List<Note> filtered = new ArrayList<>();
+
+                for (Note note : notes) {
+                    if (note.getText().contains(search))
+                        filtered.add(note);
+                }
+
+                adapter = new NotesAdapter(MainActivity.this, filtered);
+                binding.notesList.setAdapter(adapter);
+            }
+        });
+
+        return true;
     }
 
     @Override

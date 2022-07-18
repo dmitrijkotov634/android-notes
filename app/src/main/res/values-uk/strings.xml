@@ -13,4 +13,6 @@
     <string name="underline"><u>Підкреслений</u></string>
     <string name="strikethrough"><strike>Закреслений</strike></string>
     <string name="normal">Звичайний</string>
+
+    <string name="search">Пошук</string>
 </resources>
