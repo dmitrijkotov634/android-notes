@@ -112,7 +112,7 @@ public class NoteEditorActivity extends AppCompatActivity {
         binding.noteText.setCursorVisible(editing);
         binding.noteText.setFocusableInTouchMode(editing);
 
-        binding.fab2.setImageResource(editing ? R.drawable.ic_baseline_check_24 : R.drawable.ic_edit);
+        binding.fab2.setImageResource(editing ? R.drawable.ic_baseline_check_24 : R.drawable.ic_baseline_edit_24);
 
         invalidateOptionsMenu();
 

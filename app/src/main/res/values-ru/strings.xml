@@ -3,7 +3,7 @@
     <string name="app_name">Заметки</string>
 
     <string name="name">Название</string>
-    <string name="warning">Вы действительно хотите удалить этот элемент?</string>
+    <string name="warning">Вы уверены, что хотите удалить эти элементы?</string>
 
     <string name="yes">Да</string>
     <string name="no">Нет</string>
@@ -15,4 +15,5 @@
     <string name="normal">Обычный</string>
 
     <string name="search">Поиск</string>
+    <string name="remove">Удалить</string>
 </resources>

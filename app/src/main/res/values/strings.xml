@@ -2,7 +2,7 @@
     <string name="app_name">Notes</string>
 
     <string name="name">Name</string>
-    <string name="warning">Are you sure you want to remove the item?</string>
+    <string name="warning">Are you sure you want to delete items?</string>
 
     <string name="yes">Yes</string>
     <string name="no">No</string>
@@ -14,4 +14,5 @@
     <string name="normal">Normal</string>
 
     <string name="search">Search</string>
+    <string name="remove">Remove</string>
 </resources>

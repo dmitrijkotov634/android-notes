@@ -63,6 +63,6 @@
         android:contentDescription="@null"
         android:focusable="true"
         app:fabSize="mini"
-        app:srcCompat="@drawable/ic_edit" />
+        app:srcCompat="@drawable/ic_baseline_edit_24" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -14,12 +14,14 @@ import com.dm.notes.models.Note;
 import java.util.List;
 
 public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> {
-    public List<Note> data;
+    public List<Note> notes;
+    public List<Note> selected;
     public NotesCallback callback;
 
-    public NotesAdapter(NotesCallback callback, List<Note> data) {
+    public NotesAdapter(NotesCallback callback, List<Note> notes, List<Note> selected) {
         this.callback = callback;
-        this.data = data;
+        this.notes = notes;
+        this.selected = selected;
     }
 
     @NonNull
@@ -31,15 +33,16 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull NotesAdapter.ViewHolder holder, int position) {
-        holder.binding.note.setText(Utils.fromHtml(data.get(position).getText()));
+        holder.binding.note.setText(Utils.fromHtml(notes.get(position).getText()));
+        holder.binding.getRoot().setChecked(selected.contains(notes.get(position)));
     }
 
     @Override
     public int getItemCount() {
-        return data.size();
+        return notes.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
+    public class ViewHolder extends RecyclerView.ViewHolder {
         public final NoteLayoutBinding binding;
 
         public ViewHolder(NoteLayoutBinding binding) {
@@ -47,25 +50,35 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
 
             this.binding = binding;
 
-            binding.getRoot().setOnClickListener(this);
-            binding.getRoot().setOnLongClickListener(this);
-        }
+            View.OnLongClickListener longClickListener = v -> {
+                Note note = notes.get(getLayoutPosition());
 
-        @Override
-        public void onClick(View view) {
-            callback.onNoteClicked(data.get(getLayoutPosition()), getLayoutPosition());
-        }
+                if (selected.contains(note)) selected.remove(note);
+                else selected.add(note);
 
-        @Override
-        public boolean onLongClick(View view) {
-            callback.onNoteLongClicked(data.get(getLayoutPosition()), getLayoutPosition());
-            return true;
+                binding.getRoot().toggle();
+
+                callback.onNoteSelected(note);
+                return true;
+            };
+
+            binding.getRoot().setOnClickListener((v) -> {
+                if (!selected.isEmpty()) {
+                    longClickListener.onLongClick(v);
+                    return;
+                }
+
+                callback.onNoteClicked(notes.get(getLayoutPosition()), getLayoutPosition());
+            });
+
+            binding.getRoot().setOnLongClickListener(longClickListener);
         }
     }
 
     public interface NotesCallback {
         void onNoteClicked(Note note, int position);
 
-        void onNoteLongClicked(Note note, int position);
+        void onNoteSelected(Note note);
     }
 }
+
