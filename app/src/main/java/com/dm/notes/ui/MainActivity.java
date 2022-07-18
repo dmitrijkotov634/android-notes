@@ -106,8 +106,9 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
             private void doSearch(String search) {
                 List<Note> filtered = new ArrayList<>();
 
+                search = search.toLowerCase();
                 for (Note note : notes) {
-                    if (note.getText().contains(search))
+                    if (note.getText().toLowerCase().contains(search))
                         filtered.add(note);
                 }
 
