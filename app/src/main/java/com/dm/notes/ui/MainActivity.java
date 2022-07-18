@@ -205,4 +205,16 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
         if (binding.fab.getVisibility() == View.VISIBLE)
             invalidateOptionsMenu();
     }
+
+    @SuppressLint("NotifyDataSetChanged")
+    @Override
+    public void onBackPressed() {
+        if (!selected.isEmpty()) {
+            selected.clear();
+            invalidateOptionsMenu();
+            adapter.notifyDataSetChanged();
+            return;
+        }
+        super.onBackPressed();
+    }
 }
