@@ -75,7 +75,7 @@ public class NoteEditorActivity extends AppCompatActivity {
 
         intent = getIntent();
 
-        changeMode(intent.getBooleanExtra("empty", true));
+        changeMode(intent.getBooleanExtra("editing", true));
 
         try (Cursor cursor = db.query(DatabaseHelper.TABLE,
                 new String[]{DatabaseHelper.COLUMN_NAME, DatabaseHelper.COLUMN_TEXT},
@@ -111,6 +111,7 @@ public class NoteEditorActivity extends AppCompatActivity {
         binding.noteText.setFocusable(editing);
         binding.noteText.setCursorVisible(editing);
         binding.noteText.setFocusableInTouchMode(editing);
+        binding.noteText.setTextIsSelectable(editing);
 
         binding.fab2.setImageResource(editing ? R.drawable.ic_baseline_check_24 : R.drawable.ic_baseline_edit_24);
 

@@ -12,13 +12,16 @@ import com.dm.notes.helpers.Utils;
 import com.dm.notes.models.Note;
 
 import java.util.List;
+import java.util.Set;
 
 public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> {
-    public List<Note> notes;
-    public List<Note> selected;
-    public NotesCallback callback;
 
-    public NotesAdapter(NotesCallback callback, List<Note> notes, List<Note> selected) {
+    public final List<Note> notes;
+
+    private final Set<Note> selected;
+    private final NotesCallback callback;
+
+    public NotesAdapter(NotesCallback callback, List<Note> notes, Set<Note> selected) {
         this.callback = callback;
         this.notes = notes;
         this.selected = selected;

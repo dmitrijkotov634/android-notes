@@ -22,11 +22,14 @@ import com.dm.notes.models.Note;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+@SuppressLint("NotifyDataSetChanged")
 public class MainActivity extends AppCompatActivity implements NotesAdapter.NotesCallback {
 
-    private final List<Note> selected = new ArrayList<>();
+    private final Set<Note> selected = new HashSet<>();
     private final List<Note> notes = new ArrayList<>();
 
     private ActivityMainBinding binding;
@@ -35,6 +38,18 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
     private SQLiteDatabase db;
 
     private Note currentNote;
+
+    SearchView.OnCloseListener listener = () -> {
+        binding.fab.setVisibility(View.VISIBLE);
+
+        adapter = new NotesAdapter(MainActivity.this, notes, selected);
+        binding.notesList.setAdapter(adapter);
+
+        invalidateOptionsMenu();
+
+        binding.notesList.scrollToPosition(notes.size() - 1);
+        return false;
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
 
             Intent intent = new Intent(getApplicationContext(), NoteEditorActivity.class);
             intent.putExtra("id", noteId);
-            intent.putExtra("empty", true);
+            intent.putExtra("editing", true);
             startActivity(intent);
 
             notes.add(currentNote = new Note(noteId, ""));
@@ -79,7 +94,6 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
         binding.notesList.scrollToPosition(notes.size() - 1);
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.remove) {
@@ -122,16 +136,7 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
         SearchView searchView = (SearchView) menu.findItem(R.id.app_bar_search).getActionView();
 
         searchView.setOnSearchClickListener(v -> binding.fab.setVisibility(View.GONE));
-
-        searchView.setOnCloseListener(() -> {
-            binding.fab.setVisibility(View.VISIBLE);
-
-            adapter = new NotesAdapter(MainActivity.this, notes, selected);
-            binding.notesList.setAdapter(adapter);
-
-            invalidateOptionsMenu();
-            return false;
-        });
+        searchView.setOnCloseListener(listener);
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -156,7 +161,9 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
                 }
 
                 adapter = new NotesAdapter(MainActivity.this, filtered, selected);
+
                 binding.notesList.setAdapter(adapter);
+                binding.notesList.scrollToPosition(filtered.size() - 1);
             }
         });
 
@@ -177,8 +184,15 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
             while (cursor.moveToNext()) {
                 int position = notes.indexOf(currentNote);
 
+                Note newNote = new Note(currentNote.getId(), cursor.getString(0));
+
                 notes.remove(position);
-                notes.add(position, new Note(currentNote.getId(), cursor.getString(0)));
+                notes.add(position, newNote);
+
+                if (selected.contains(currentNote)) {
+                    selected.remove(currentNote);
+                    selected.add(newNote);
+                }
 
                 adapter.notifyItemChanged(position);
                 binding.notesList.scrollToPosition(position);
@@ -193,11 +207,13 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
         Intent intent = new Intent(this, NoteEditorActivity.class);
 
         intent.putExtra("id", note.getId());
-        intent.putExtra("empty", note.getText().isEmpty());
+        intent.putExtra("editing", note.getText().isEmpty());
 
         startActivity(intent);
 
         currentNote = note;
+
+        listener.onClose();
     }
 
     @Override
@@ -206,7 +222,6 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
             invalidateOptionsMenu();
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onBackPressed() {
         if (!selected.isEmpty()) {
